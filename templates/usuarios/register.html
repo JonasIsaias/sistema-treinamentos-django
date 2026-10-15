@@ -1,0 +1,29 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Registrar Conta{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto mt-10 bg-white p-6 rounded shadow">
+  <h2 class="text-2xl font-semibold mb-4">Registrar nova conta</h2>
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    {% for field in form %}
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700" for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}
+          <p class="text-red-600 text-sm">{{ field.errors|striptags }}</p>
+        {% endif %}
+      </div>
+    {% endfor %}
+
+    <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Criar Conta</button>
+  </form>
+
+  <p class="mt-4 text-sm text-center">
+    Já tem conta? <a href="{% url 'login' %}" class="text-blue-600 hover:underline">Entrar</a>
+  </p>
+</div>
+{% endblock %}
