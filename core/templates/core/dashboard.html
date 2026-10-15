@@ -1,0 +1,259 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="bg-white p-6 rounded-2xl shadow-md font-[Pitanga]">
+
+  <h1 class="text-[32pt] font-medium text-[#1539AA] flex items-center gap-2">
+    👤 Bem-vindo, {{ usuario.get_full_name|default:usuario.username }}
+    <span class="text-[14pt] font-normal text-gray-500 font-sans">
+      ({{ nivel|title }})
+    </span>
+  </h1>
+
+  <!-- FILTROS -->
+  <form method="get" class="flex flex-wrap gap-4 items-end mb-6 mt-4">
+
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Instrutor</label>
+      <select name="instrutor" class="border rounded-lg px-3 py-2 w-56">
+        <option value="">Todos</option>
+        {% for instrutor in instrutores %}
+          <option value="{{ instrutor.id }}"
+            {% if request.GET.instrutor == instrutor.id|stringformat:"s" %}selected{% endif %}>
+            {{ instrutor }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Data início</label>
+      <input type="date" name="data_inicio"
+             value="{{ data_inicio|default:'' }}"
+             class="border rounded-lg px-3 py-2">
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Data fim</label>
+      <input type="date" name="data_fim"
+             value="{{ data_fim|default:'' }}"
+             class="border rounded-lg px-3 py-2">
+    </div>
+
+    <div class="flex gap-2">
+      <button type="submit"
+              class="bg-[#1539AA] text-white px-4 py-2 rounded-lg shadow hover:bg-[#10288f]">
+        Filtrar
+      </button>
+      <a href="{% url 'dashboard' %}"
+         class="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg shadow hover:bg-gray-400">
+        Limpar
+      </a>
+    </div>
+  </form>
+
+  <!-- INDICADORES -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mt-6 font-sans">
+
+    <div class="bg-[#FF222B]/10 p-5 rounded-xl border border-[#FF222B]/30 text-center">
+      <p class="text-sm text-[#FF222B]">Treinamentos Realizados</p>
+      <h2 class="text-[26pt] font-bold text-[#FF222B] font-[Pitanga]">
+        {{ total_treinamentos }}
+      </h2>
+    </div>
+
+    <div class="relative group bg-[#FF4E05]/10 p-5 rounded-xl border border-[#FF4E05]/30 text-center cursor-pointer">
+      <p class="text-sm text-[#FF4E05]">Colaboradores Treinados</p>
+      <h2 class="text-[26pt] font-bold text-[#FF4E05] font-[Pitanga]">
+        {{ participacoes_validas }}
+      </h2>
+      <p class="text-sm text-gray-600 mt-1">
+        Presença ≥ 75%
+      </p>
+      <!-- TOOLTIP -->
+      <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 
+                  hidden group-hover:block 
+                  bg-gray-800 text-white text-xs rounded-lg px-3 py-2 
+                  shadow-lg w-64 z-10">
+        Quantidade de colaboradores únicos com presença mínima de 75% em treinamentos.
+      </div>
+    </div>
+
+    <div class="relative group bg-[#22C55E]/10 p-5 rounded-xl border border-[#22C55E]/30 text-center">
+      <p class="text-sm text-[#22C55E]">Participações em Treinamentos</p>
+      <h2 class="text-[26pt] font-bold text-[#22C55E] font-[Pitanga]">
+        {{ total_participacoes }}
+      </h2>
+      <p class="text-sm text-gray-600 mt-1">
+        Média de {{ media_participacoes|floatformat:1 }} participações por colaborador
+      </p>
+      <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 
+                  hidden group-hover:block 
+                  bg-gray-800 text-white text-xs rounded-lg px-3 py-2 
+                  shadow-lg w-64 z-10">
+        Total de presenças registradas nos treinamentos (um colaborador pode ser contado mais de uma vez se participou de vários treinamentos)
+      </div>
+    </div>
+
+    <div class="bg-[#FF8800]/10 p-5 rounded-xl border border-[#FF8800]/30 text-center">
+      <p class="text-sm text-[#FF8800]">Treinamentos Concluídos</p>
+      <h2 class="text-[26pt] font-bold text-[#FF8800] font-[Pitanga]">
+        {{ treinamentos_concluidos }}
+      </h2>
+    </div>
+
+    <div class="bg-[#6B7280]/10 p-5 rounded-xl border border-[#6B7280]/30 text-center">
+      <p class="text-sm text-[#6B7280]">Participantes Externos</p>
+      <h2 class="text-[26pt] font-bold text-[#6B7280] font-[Pitanga]">
+        {{ total_externos }}
+      </h2>
+      <p class="text-sm text-gray-600 mt-1">
+        Em {{ treinamentos_com_externos }} treinamentos
+      </p>
+    </div>
+
+    <div class="bg-[#1539AA]/10 p-5 rounded-xl border border-[#1539AA]/30 text-center">
+      <p class="text-sm text-[#1539AA]">Carga Horária Total</p>
+      <h2 class="text-[26pt] font-bold text-[#1539AA] font-[Pitanga]">
+        {{ carga_horaria_total }}
+      </h2>
+      <p class="text-sm text-gray-600 mt-1">
+        Horas acumuladas no período
+      </p>
+    </div>
+
+    </div>
+  </div>
+
+  <!-- GRÁFICOS -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10">
+
+    <!-- SERVIÇOS -->
+    <div class="bg-white p-5 rounded-xl shadow border">
+      <h3 class="text-xl font-semibold text-[#1539AA] mb-4">
+        📊 Treinamentos por Serviço
+      </h3>
+      <div class="h-64">
+        <canvas id="servicoChart"></canvas>
+      </div>
+
+      <div class="overflow-auto max-h-64 mt-4">
+        <table id="servicosTable" class="min-w-full text-sm border">
+          <thead class="bg-gray-100">
+            <tr>
+              <th class="px-4 py-2 border">Serviço</th>
+              <th class="px-4 py-2 border">Quantidade</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for servico, total in servicos_tabela %}
+              <tr>
+                <td class="px-4 py-2 border">{{ servico }}</td>
+                <td class="px-4 py-2 border">{{ total }}</td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="2" class="text-center text-red-500 py-3">
+                  Nenhum dado encontrado.
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- INSTRUTORES -->
+    <div class="bg-white p-5 rounded-xl shadow border">
+      <h3 class="text-xl font-semibold text-[#1539AA] mb-4">
+        🏆 Top 5 Instrutores
+      </h3>
+
+      <div class="h-64">
+        <canvas id="instrutoresChart"></canvas>
+      </div>
+
+      <div class="overflow-auto max-h-64 mt-4">
+        <table id="instrutoresTable" class="min-w-full text-sm border">
+          <thead class="bg-gray-100">
+            <tr>
+              <th class="px-4 py-2 border">Instrutor</th>
+              <th class="px-4 py-2 border">Treinamentos</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for instrutor, total in instrutores_tabela %}
+              <tr>
+                <td class="px-4 py-2 border">
+                  {{ instrutor }}
+                </td>
+                <td class="px-4 py-2 border">{{ total }}</td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="2" class="text-center text-red-500 py-3">
+                  Nenhum dado encontrado.
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+  new Chart(document.getElementById('servicoChart'), {
+    type: 'bar',
+    data: {
+      labels: {{ labels_servico|safe }},
+      datasets: [{
+        label: 'Serviços',
+        data: {{ dados_servico|safe }},
+        backgroundColor: '#1539AA'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        }
+      },
+      scales: {
+        x: {
+          ticks: {
+            maxRotation: 45,
+            minRotation: 30
+          }
+        }
+      }
+    }
+  });
+
+  new Chart(document.getElementById('instrutoresChart'), {
+    type: 'pie',
+    data: {
+      labels: {{ labels_instrutores|safe }},
+      datasets: [{
+        data: {{ dados_instrutores|safe }},
+        backgroundColor: ['#FF222B','#FF4E05','#FF8800','#FFCC23','#1539AA']
+      }]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+
+});
+</script>
+{% endblock %}

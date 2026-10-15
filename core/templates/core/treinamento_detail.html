@@ -1,0 +1,145 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Detalhes do Treinamento - {{ treinamento.titulo }}{% endblock %}
+
+{% block content %}
+<section class="max-w-5xl mx-auto p-6 font-[Pitanga]">
+  <h2 class="text-[28pt] font-bold text-[#1539AA] mb-6 border-b border-[#DCE2F5] pb-2 flex items-center gap-3">
+    🎯 {{ treinamento.titulo }}
+  </h2>
+
+  <!-- Bloco de Detalhes -->
+  <div class="bg-white p-6 rounded-2xl shadow-md space-y-4">
+    <h3 class="text-xl font-semibold text-[#1539AA] flex items-center gap-2">📋 Detalhes do Treinamento</h3>
+    <div class="text-[#333] space-y-2 font-sans text-[13pt]">
+      <p><span class="font-semibold">📍 Local:</span> {{ treinamento.local }}</p>
+      <p><span class="font-semibold">📅 Período:</span> {{ treinamento.data_inicio|date:"d \d\e M \d\e Y" }} até {{ treinamento.data_fim|date:"d \d\e M \d\e Y" }}</p>
+      <p><span class="font-semibold">⏱ Carga Horária Total:</span> {{ carga_horaria_total }}</p>
+    </div>
+  </div>
+
+  {% if consolidado %}
+  <!-- Resumo e Gráficos -->
+  <div class="bg-[#E8F0FE] p-6 rounded-2xl shadow-md mt-6 text-[#1539AA] font-sans text-[14pt]">
+    <h3 class="text-xl font-semibold mb-4">📊 Resumo do Treinamento</h3>
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-6 mb-6">
+      <div><strong>Programados:</strong> {{ programados }}</div>
+      <div><strong>Treinados:</strong> {{ treinados }}</div>
+      <div><strong>Faltosos:</strong> {{ faltosos }}</div>
+      <div><strong>Aplicado %:</strong> {{ aplicado_percent|floatformat:0 }}%</div>
+      <div><strong>Absenteísmo %:</strong> {{ absenteismo_percent|floatformat:0 }}%</div>
+      <div><strong>Dias:</strong> {{ dias }}</div>
+    </div>
+
+    <!-- Gráficos -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div class="text-center">
+        <canvas id="chartAplicado" width="300" height="300" class="mx-auto"></canvas>
+        <button onclick="baixarGrafico('chartAplicado')" class="mt-4 bg-[#1539AA] text-white px-4 py-2 rounded shadow hover:bg-[#122f8a]">
+          📥 Baixar Gráfico
+        </button>
+      </div>
+
+      <div class="text-center">
+        <canvas id="chartPizza" width="300" height="300" class="mx-auto"></canvas>
+        <button onclick="baixarGrafico('chartPizza')" class="mt-4 bg-[#FF222B] text-white px-4 py-2 rounded shadow hover:bg-[#c41820]">
+          📥 Baixar Gráfico
+        </button>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Ações -->
+  <div class="mt-8 text-right">
+    <a href="{% url 'registrar_frequencia' treinamento.id %}?data={{ hoje|default:treinamento.data_inicio|date:'Y-m-d' }}" 
+      class="inline-flex items-center gap-2 bg-[#FF222B] hover:bg-[#d51d24] text-white px-6 py-2 rounded-lg shadow transition font-sans font-semibold text-[13pt]">
+      📝 Registrar Frequência
+    </a>
+  </div>
+</section>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+{% if consolidado %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const aplicado = parseFloat('{{ aplicado_percent|default:"0" }}');
+    const absenteismo = parseFloat('{{ absenteismo_percent|default:"0" }}');
+    const treinados = parseInt('{{ treinados|default:"0" }}');
+    const faltosos = parseInt('{{ faltosos|default:"0" }}');
+
+    // Gráfico de Barras
+    new Chart(document.getElementById('chartAplicado'), {
+      type: 'bar',
+      data: {
+        labels: ['Aplicado %', 'Absenteísmo %'],
+        datasets: [{
+          data: [aplicado, absenteismo],
+          backgroundColor: ['#1539AA', '#FF222B'],
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 100,
+            ticks: {
+              callback: val => val + '%'
+            }
+          }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: context => context.parsed.y + '%'
+            }
+          }
+        }
+      }
+    });
+
+    // Gráfico de Pizza
+    new Chart(document.getElementById('chartPizza'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Treinados', 'Faltosos'],
+        datasets: [{
+          data: [treinados, faltosos],
+          backgroundColor: ['#1E90FF', '#FF6B6B'],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: false,
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: function (context) {
+                const total = treinados + faltosos;
+                const valor = context.parsed;
+                const porcentagem = total ? ((valor / total) * 100).toFixed(1) : 0;
+                return `${context.label}: ${valor} (${porcentagem}%)`;
+              }
+            }
+          }
+        }
+      }
+    });
+  });
+
+  function baixarGrafico(id) {
+    const canvas = document.getElementById(id);
+    const link = document.createElement('a');
+    link.download = id + '.png';
+    link.href = canvas.toDataURL();
+    link.click();
+  }
+</script>
+{% endif %}
+{% endblock %}

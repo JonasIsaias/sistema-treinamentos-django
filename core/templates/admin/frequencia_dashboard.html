@@ -1,0 +1,171 @@
+{% extends 'core/base.html' %}
+{% block title %}Dashboard de Frequência{% endblock %}
+
+{% block content %}
+<h2 class="text-2xl font-semibold text-primary mb-6 text-center md:text-left">📊 Dashboard de Frequência por Treinamento</h2>
+
+<!-- Filtro por Treinamento e Colaborador -->
+<form method="get" class="mb-6">
+    <div class="flex flex-col md:flex-row items-start md:items-end gap-4">
+        <div class="w-full md:w-1/3">
+            <label for="colaborador" class="block font-medium mb-1 text-gray-700">Filtrar por Colaborador:</label>
+            <input type="text" name="colaborador" id="colaborador" placeholder="Digite o nome"
+                   value="{{ colaborador_nome|default:'' }}"
+                   class="border rounded px-3 py-2 w-full text-sm">
+        </div>
+        <div class="w-full md:w-1/3">
+            <label for="matricula" class="block font-medium mb-1 text-gray-700">Filtrar por Matrícula:</label>
+            <input type="text" name="matricula" id="matricula" placeholder="Digite a matrícula"
+                   value="{{ matricula_colaborador|default:'' }}"
+                   class="border rounded px-3 py-2 w-full text-sm">
+        </div>
+        <div class="w-full md:w-1/3">
+            <label for="treinamento" class="block font-medium mb-1 text-gray-700">Filtrar por Treinamento:</label>
+            <select name="treinamento" id="treinamento" class="border rounded px-3 py-2 w-full text-sm">
+                <option value="">Todos os Treinamentos</option>
+                {% for treinamento in treinamentos %}
+                    <option value="{{ treinamento.id }}" {% if treinamento.id == treinamento_selecionado %}selected{% endif %}>
+                        {{ treinamento.titulo }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="bg-blue-600 text-white px-5 py-2 rounded text-sm w-full md:w-auto">
+            Filtrar
+        </button>
+    </div>
+</form>
+
+<!-- Removido botões de exportação abaixo do filtro -->
+
+<!-- Gráfico de Frequência -->
+<div class="bg-white rounded-2xl shadow p-4 md:p-6 border border-gray-200 mb-8">
+    <h3 class="text-lg font-semibold mb-4 text-center md:text-left">Gráfico de Frequência por Colaborador</h3>
+    <div class="relative w-full overflow-x-auto">
+        <canvas id="frequenciaChart" class="min-w-[600px] h-[300px] sm:h-[400px] md:h-[450px]"></canvas>
+    </div>
+</div>
+
+<!-- Botões de exportação gerais (visíveis, exportam todos os dados conforme filtro atual) -->
+<div class="flex flex-wrap gap-2 mb-6">
+    <a href="{% url 'exportar_dashboard_excel' %}?colaborador={{ colaborador_nome }}&matricula={{ matricula_colaborador }}&treinamento={{ treinamento_selecionado }}"
+       class="bg-green-600 text-white px-4 py-2 rounded text-sm hover:bg-green-700 transition">
+        📥 Exportar Excel (Tudo)
+    </a>
+    <a href="{% url 'exportar_dashboard_pdf' %}?colaborador={{ colaborador_nome }}&matricula={{ matricula_colaborador }}&treinamento={{ treinamento_selecionado }}"
+       class="bg-red-600 text-white px-4 py-2 rounded text-sm hover:bg-red-700 transition">
+        📄 Exportar PDF (Tudo)
+    </a>
+</div>
+
+<!-- Tabela Detalhada -->
+<div class="bg-white rounded-2xl shadow p-4 md:p-6 border border-gray-200">
+    <h3 class="text-lg font-semibold mb-4 text-center md:text-left">Detalhamento por Colaborador</h3>
+    <div class="overflow-x-auto">
+        <table class="min-w-full bg-white text-sm">
+            <thead>
+                <tr class="bg-gray-100 text-gray-700 text-left">
+                    <th class="py-2 px-4 border whitespace-nowrap">Nome</th>
+                    <th class="py-2 px-4 border whitespace-nowrap">Matrícula</th>
+                    <th class="py-2 px-4 border whitespace-nowrap">Dias com Presença</th>
+                    <th class="py-2 px-4 border whitespace-nowrap">Dias com Falta</th>
+                    <th class="py-2 px-4 border whitespace-nowrap">% de Presença</th>
+                    <th class="py-2 px-4 border whitespace-nowrap">Total de Dias</th>
+                    <th class="py-2 px-4 border whitespace-nowrap">Total de Treinamentos</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in colaboradores_dados %}
+                <tr class="border-t hover:bg-gray-50 cursor-pointer toggle-detalhes" data-id="{{ forloop.counter0 }}">
+                    <td class="py-2 px-4 border">{{ c.nome }}</td>
+                    <td class="py-2 px-4 border">{{ c.matricula }}</td>
+                    <td class="py-2 px-4 border text-center">{{ c.dias_presenca }}</td>
+                    <td class="py-2 px-4 border text-center">{{ c.dias_falta }}</td>
+                    <td class="py-2 px-4 border text-center">{{ c.porcentagem_presenca }}%</td>
+                    <td class="py-2 px-4 border text-center">{{ c.total_dias }}</td>
+                    <td class="py-2 px-4 border text-center">{{ c.total_treinamentos }}</td>
+                </tr>
+                <tr class="hidden detalhe-faltas" id="detalhe-{{ forloop.counter0 }}">
+                    <td colspan="7" class="py-3 px-4 border bg-gray-50 text-gray-700">
+                        <p><strong>Total de Treinamentos:</strong> {{ c.total_treinamentos }}</p>
+                        <hr class="my-2">
+                        {% for treinamento in c.treinamentos %}
+                            <div class="mb-4 border-b border-gray-200 pb-4">
+                                <p><strong>Título:</strong> {{ treinamento.titulo }}</p>
+                                <p><strong>Período:</strong> {{ treinamento.data_inicio|date:"d/m/Y" }} a {{ treinamento.data_fim|date:"d/m/Y" }}</p>
+                                <p><strong>Presença:</strong> {{ treinamento.porcentagem_presenca }}% ({{ treinamento.dias_presenca }} dias)</p>
+                                <p><strong>Faltas:</strong> {{ treinamento.dias_falta }} ({{ treinamento.faltas|join:", " }})</p>
+                            </div>
+                        {% empty %}
+                            <p>Nenhum treinamento registrado.</p>
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-4 text-gray-500">Nenhum colaborador encontrado.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const ctx = document.getElementById('frequenciaChart').getContext('2d');
+    const chartData = {{ chart_data|safe }};
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: chartData.labels,
+            datasets: [{
+                label: '% de Presença',
+                data: chartData.data,
+                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1,
+                borderRadius: 6,
+                barPercentage: 0.6,
+                categoryPercentage: 0.6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: true },
+                tooltip: {
+                    backgroundColor: '#1539AA',
+                    titleFont: { size: 13 },
+                    bodyFont: { size: 12 }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            }
+        }
+    });
+
+    const linhas = document.querySelectorAll('.toggle-detalhes');
+    linhas.forEach(linha => {
+        linha.addEventListener('click', () => {
+            const id = linha.dataset.id;
+            document.querySelectorAll('.detalhe-faltas').forEach(d => {
+                if (d.id === 'detalhe-' + id) {
+                    d.classList.toggle('hidden');
+                } else {
+                    d.classList.add('hidden');
+                }
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,137 @@
+{% extends 'core/base.html' %}
+{% block title %}Dashboard de Avaliações{% endblock %}
+
+{% block content %}
+<h2 class="text-2xl font-semibold text-primary mb-6">⭐ Dashboard de Avaliações por Curso</h2>
+
+<!-- Gráfico -->
+<div class="bg-white rounded-2xl shadow p-6 overflow-x-auto border border-gray-200">
+  <canvas id="avaliacaoChart" class="w-full h-96"></canvas>
+</div>
+
+<!-- Filtro e Exportação -->
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-6 gap-2 sm:gap-0">
+  <form method="get" class="flex items-center space-x-2">
+    <label for="curso" class="text-sm font-medium text-gray-700">Filtrar por curso:</label>
+    <select name="curso" id="curso" class="border border-gray-300 rounded px-2 py-1 text-sm bg-white shadow-sm">
+      <option value="">Todos</option>
+      {% for curso in cursos %}
+        <option value="{{ curso.id }}" {% if curso.id|stringformat:"s" == curso_id %}selected{% endif %}>{{ curso.titulo }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition">Filtrar</button>
+  </form>
+
+  <a href="{% url 'exportar_avaliacoes_csv' %}{% if curso_id %}?curso={{ curso_id }}{% endif %}"
+     class="text-white bg-green-600 px-3 py-1 rounded text-sm hover:bg-green-700 transition text-center">
+     Exportar CSV
+  </a>
+</div>
+
+<!-- Comentários -->
+<h3 class="mt-10 text-xl font-semibold text-primary">Últimos Comentários</h3>
+
+{% if ultimos_comentarios %}
+<div class="overflow-x-auto mt-4 rounded-lg shadow border border-gray-200 bg-white">
+  <table class="min-w-full text-sm text-left">
+    <thead class="bg-gray-100 text-gray-700">
+      <tr>
+        <th class="px-4 py-2 border-b">Colaborador</th>
+        <th class="px-4 py-2 border-b">Curso</th>
+        <th class="px-4 py-2 border-b">Nota Média</th>
+        <th class="px-4 py-2 border-b">Comentário</th>
+        <th class="px-4 py-2 border-b">Data</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for avaliacao in ultimos_comentarios %}
+      <tr class="hover:bg-gray-50">
+        <td class="px-4 py-2 border-b">{{ avaliacao.colaborador.nome }}</td>
+        <td class="px-4 py-2 border-b">{{ avaliacao.treinamento.titulo }}</td>
+        <td class="px-4 py-2 border-b">
+          {{ avaliacao.media }}
+        </td>
+        <td class="px-4 py-2 border-b whitespace-pre-line max-w-xs">
+          <div x-data="{ expanded: false }">
+            <template x-if="!expanded">
+              <div>
+                {{ avaliacao.comentarios|truncatechars:150 }}
+                {% if avaliacao.comentarios|length > 150 %}
+                <button class="text-blue-600 text-xs underline ml-1" @click="expanded = true">[ver mais]</button>
+                {% endif %}
+              </div>
+            </template>
+            <template x-if="expanded">
+              <div>
+                {{ avaliacao.comentarios }}
+                <button class="text-blue-600 text-xs underline ml-1" @click="expanded = false">[ver menos]</button>
+              </div>
+            </template>
+          </div>
+        </td>
+        <td class="px-4 py-2 border-b text-gray-500">{{ avaliacao.data_avaliacao|date:"d/m/Y H:i" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p class="mt-4 text-gray-500">Nenhum comentário registrado até o momento.</p>
+{% endif %}
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const ctx = document.getElementById('avaliacaoChart').getContext('2d');
+  const chartData = {{ chart_data|safe }};
+  
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: chartData.labels,
+      datasets: [{
+        label: 'Nota Média por Curso',
+        data: chartData.data,
+        backgroundColor: 'rgba(75, 192, 192, 0.6)',
+        borderColor: 'rgba(75, 192, 192, 1)',
+        borderWidth: 1,
+        borderRadius: 8,
+        barPercentage: 0.6,
+        categoryPercentage: 0.5
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: true,
+          labels: {
+            color: '#1539AA',
+            font: { family: 'Pitanga', size: 14 }
+          }
+        },
+        tooltip: {
+          backgroundColor: '#1539AA',
+          titleFont: { family: 'Pitanga', size: 14 },
+          bodyFont: { family: 'Pitanga', size: 13 }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          max: 10,
+          ticks: { color: '#000', font: { family: 'Pitanga' } }
+        },
+        x: {
+          ticks: { color: '#000', font: { family: 'Pitanga' } }
+        }
+      }
+    }
+  });
+});
+</script>
+{% endblock %}

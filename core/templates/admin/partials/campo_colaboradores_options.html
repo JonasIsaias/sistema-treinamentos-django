@@ -1,0 +1,5 @@
+{% for colaborador in colaboradores %}
+    <option value="{{ colaborador.id }}">{{ colaborador.matricula }} - {{ colaborador.nome }}</option>
+{% empty %}
+    <option disabled>Nenhum colaborador encontrado</option>
+{% endfor %}

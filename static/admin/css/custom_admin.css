@@ -1,0 +1,37 @@
+/* =========================
+   Datepicker do RangeFilter
+   ========================= */
+
+/* Container do calendário */
+.ui-datepicker {
+    width: 260px !important;
+    padding: 6px !important;
+    font-size: 12px !important;
+}
+
+/* Cabeçalho (mês/ano) */
+.ui-datepicker-header {
+    padding: 4px 0 !important;
+}
+
+/* Tabela do calendário */
+.ui-datepicker table {
+    font-size: 11px !important;
+}
+
+/* Dias */
+.ui-datepicker td a,
+.ui-datepicker td span {
+    padding: 3px !important;
+}
+
+/* Botões inferiores (Hoje / Fechar) */
+.ui-datepicker-buttonpane {
+    padding: 4px !important;
+}
+
+/* Inputs de data (antes/depois) */
+.rangefilter input {
+    width: 110px !important;
+    font-size: 12px !important;
+}

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}Sistema de Treinamentos{% endblock %}</title>
+  {% load static %}
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- TailwindCSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
+  <!-- Heroicons (via CDN) -->
+  <script src="https://unpkg.com/feather-icons"></script>
+
+  <!-- Tailwind Config -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            pitanga: ['"Pitanga"', 'sans-serif']
+          },
+          colors: {
+            primary: '#1539AA',
+            error: '#FF222B',
+            warning: '#FF8800',
+            alert: '#FF4E05',
+            yellow: '#FFCC23',
+            white: '#FFFFFF',
+            black: '#000000',
+            accent: '#3b82f6',
+          },
+        },
+      }
+    }
+  </script>
+
+  <!-- Fontes personalizadas -->
+  <style>
+    @font-face {
+      font-family: 'Pitanga';
+      src: url("{% static 'fonts/Pitanga-Regular.ttf' %}") format('truetype');
+      font-weight: 400;
+    }
+    @font-face {
+      font-family: 'Pitanga';
+      src: url("{% static 'fonts/Pitanga-Medium.ttf' %}") format('truetype');
+      font-weight: 500;
+    }
+  </style>
+</head>
+
+<body class="bg-white text-black min-h-screen font-pitanga flex">
+
+  <!-- Sidebar fixa (desktop) -->
+  <aside class="hidden md:block w-64 bg-primary text-white min-h-screen p-6">
+    <h1 class="text-2xl font-bold mb-8 flex items-center gap-2">
+      <i data-feather="book-open"></i> Treinamentos
+    </h1>
+    <nav class="space-y-4 text-[15pt]">
+      {% if user.is_authenticated %}
+        <p class="flex items-center gap-2">
+          <i data-feather="user"></i> <strong>{{ user.username }}</strong>
+        </p>
+
+        <a href="{% url 'treinamento_list' %}" class="block flex items-center gap-2
+          {% if request.resolver_match.url_name == 'treinamento_list' %}
+            text-yellow
+          {% else %}
+            hover:text-yellow
+          {% endif %}">
+          <i data-feather="clipboard"></i> Meus Treinamentos
+        </a>
+
+        <a href="{% url 'dashboard' %}" class="block flex items-center gap-2
+          {% if request.resolver_match.url_name == 'dashboard' %}
+            text-yellow
+          {% else %}
+            hover:text-yellow
+          {% endif %}">
+          <i data-feather="bar-chart-2"></i> Dashboard
+        </a>
+
+        <a href="{% url 'treinamento_create' %}" class="block flex items-center gap-2
+          {% if request.resolver_match.url_name == 'treinamento_create' %}
+            text-yellow
+          {% else %}
+            hover:text-yellow
+          {% endif %}">
+          <i data-feather="plus-circle"></i> Novo Treinamento
+        </a>
+
+        <a href="{% url 'dashboard_frequencia' %}" class="block flex items-center gap-2
+          {% if request.resolver_match.url_name == 'dashboard_frequencia' %}
+            text-yellow
+          {% else %}
+            hover:text-yellow
+          {% endif %}">
+          <i data-feather="calendar"></i> Relatório
+        </a>
+
+        <a href="{% url 'logout' %}" class="block bg-error hover:bg-red-700 text-white px-4 py-2 mt-4 rounded shadow flex items-center gap-2">
+          <i data-feather="log-out"></i> Sair
+        </a>
+      {% else %}
+        <a href="{% url 'login' %}" class="block hover:text-yellow">Login</a>
+      {% endif %}
+    </nav>
+  </aside>
+
+  <!-- Conteúdo principal com imagem de fundo -->
+  <div class="flex-1 flex flex-col min-h-screen relative">
+
+    <!-- Imagem de fundo com opacidade -->
+    <div class="absolute inset-0 z-0 bg-no-repeat bg-center bg-contain opacity-10 pointer-events-none"
+         style="background-image: url('{% static 'images/logo-fundo.png' %}');">
+    </div>
+
+    <!-- Conteúdo real sobreposto -->
+    <div class="relative z-10 flex flex-col min-h-screen">
+
+      <!-- Header (mobile) -->
+      <header class="bg-primary text-white p-4 md:hidden flex justify-between items-center" x-data="{ open: false }">
+        <h1 class="text-xl font-bold flex items-center gap-2">
+          <i data-feather="book-open"></i> Treinamentos
+        </h1>
+        <button @click="open = !open" class="text-white">
+          <i data-feather="menu"></i>
+        </button>
+
+        <!-- Menu mobile -->
+        <div x-show="open" class="absolute left-0 top-16 w-full bg-primary text-white p-4 z-50 shadow-md">
+          <nav class="space-y-2 text-base">
+            {% if user.is_authenticated %}
+              <p class="flex items-center gap-2">
+                <i data-feather="user"></i> <strong>{{ user.username }}</strong>
+              </p>
+
+              <a href="{% url 'treinamento_list' %}" class="block flex items-center gap-2
+                {% if request.resolver_match.url_name == 'treinamento_list' %}
+                  text-yellow
+                {% else %}
+                  hover:text-yellow
+                {% endif %}">
+                <i data-feather="clipboard"></i> Meus Treinamentos
+              </a>
+
+              <a href="{% url 'dashboard' %}" class="block flex items-center gap-2
+                {% if request.resolver_match.url_name == 'dashboard' %}
+                  text-yellow
+                {% else %}
+                  hover:text-yellow
+                {% endif %}">
+                <i data-feather="bar-chart-2"></i> Dashboard
+              </a>
+
+              <a href="{% url 'dashboard_frequencia' %}" class="block flex items-center gap-2
+                {% if request.resolver_match.url_name == 'dashboard_frequencia' %}
+                  text-yellow
+                {% else %}
+                  hover:text-yellow
+                {% endif %}">
+                <i data-feather="calendar"></i> Frequência
+              </a>
+
+              <a href="{% url 'treinamento_create' %}" class="block flex items-center gap-2
+                {% if request.resolver_match.url_name == 'treinamento_create' %}
+                  text-yellow
+                {% else %}
+                  hover:text-yellow
+                {% endif %}">
+                <i data-feather="plus-circle"></i> Novo Treinamento
+              </a>
+
+              <a href="{% url 'logout' %}" class="block bg-error hover:bg-red-700 text-white px-4 py-2 rounded flex items-center gap-2">
+                <i data-feather="log-out"></i> Sair
+              </a>
+            {% else %}
+              <a href="{% url 'login' %}" class="block hover:text-yellow">Login</a>
+              <a href="{% url 'register' %}" class="block hover:text-yellow">Registrar</a>
+            {% endif %}
+          </nav>
+        </div>
+      </header>
+
+      <!-- Flash Messages -->
+      {% if messages %}
+        <div class="max-w-3xl mx-auto mt-4 px-4">
+          {% for message in messages %}
+            <div class="rounded-md px-4 py-3 mb-4 border-l-4 text-sm sm:text-base
+              {% if message.tags == 'success' %}
+                border-green-500 bg-green-50 text-green-800
+              {% elif message.tags == 'error' %}
+                border-error bg-red-50 text-error
+              {% elif message.tags == 'warning' %}
+                border-warning bg-yellow-50 text-warning
+              {% else %}
+                border-primary bg-blue-50 text-primary
+              {% endif %}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <!-- Conteúdo principal -->
+      <main class="flex-grow px-6 py-8">
+        {% block content %}{% endblock %}
+      </main>
+
+      <!-- Rodapé -->
+      <footer class="bg-gray-100 text-center py-5 text-sm text-gray-600 border-t mt-auto">
+        &copy; {{ year|default:2025 }} <span class="font-medium text-gray-700">NEO - Ferramentas para gestão</span>. <br>
+        Desenvolvedor Jonas Isaias
+      </footer>
+
+    </div>
+  </div>
+
+  <!-- Inicializa ícones -->
+  <script>
+    feather.replace()
+  </script>
+</body>
+</html>

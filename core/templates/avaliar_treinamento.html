@@ -1,0 +1,6 @@
+<h2>Avaliação do Treinamento: {{ treinamento.titulo }}</h2>
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Enviar Avaliação</button>
+</form>

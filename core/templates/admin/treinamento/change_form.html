@@ -1,0 +1,116 @@
+{% extends "admin/change_form.html" %}
+{% load static %}
+
+{% block extrahead %}
+    {{ block.super }}
+
+    <style>
+        .busca-colaboradores-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        #buscar-colaboradores-btn {
+            padding: 6px 12px;
+            background-color: #0c61e6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        #buscar-colaboradores-btn:hover {
+            background-color: #0949b4;
+        }
+    </style>
+
+    <script type="text/javascript">
+    (function($) {
+        $(document).ready(function() {
+            const matriculasInput = $('#id_matriculas_filter');
+            const colaboradoresSelect = $('#id_colaboradores');
+            const updateUrl = "{% url 'atualizar_colaboradores' %}";
+
+            function setLoading(state) {
+                if (state) {
+                    colaboradoresSelect.prop("disabled", true);
+                    colaboradoresSelect.html('<option>Carregando...</option>');
+                } else {
+                    colaboradoresSelect.prop("disabled", false);
+                }
+            }
+
+            function atualizarColaboradores(input) {
+                const termos = input.split(/[\n,]+/)
+                    .map(v => v.trim())
+                    .filter(v => v.length > 0);
+
+                if (termos.length === 0) {
+                    colaboradoresSelect.html('<option>Informe as matrículas ou nomes</option>');
+                    return;
+                }
+
+                setLoading(true);
+
+                $.ajax({
+                    url: updateUrl,
+                    type: 'POST',
+                    data: {
+                        'matriculas': termos.join('\n'),
+                        'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val()
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        setLoading(false);
+                        if (response.html !== undefined) {
+                            colaboradoresSelect.html(response.html);
+                            colaboradoresSelect.find('option').prop('selected', true);
+                            colaboradoresSelect.trigger('change');
+                        } else {
+                            colaboradoresSelect.html('<option>Erro ao carregar colaboradores</option>');
+                        }
+                    },
+                    error: function() {
+                        setLoading(false);
+                        colaboradoresSelect.html('<option>Erro na requisição</option>');
+                    }
+                });
+            }
+
+            // Evento do clique no botão
+            $('#buscar-colaboradores-btn').on('click', function() {
+                const val = matriculasInput.val().trim();
+                atualizarColaboradores(val);
+            });
+
+            // Sugestão de cadastro caso não encontre colaboradores
+            matriculasInput.on('blur', function () {
+                const val = $(this).val().trim();
+                if (val && colaboradoresSelect.find('option').length <= 1) {
+                    if (confirm("Colaborador não encontrado. Deseja cadastrá-lo agora?")) {
+                        window.open("/admin/core/colaborador/add/?_popup=1", "_blank", "width=800,height=600");
+                    }
+                }
+            });
+        });
+    })(django.jQuery);
+    </script>
+{% endblock %}
+
+{% block after_field_sets %}
+    <div class="busca-colaboradores-wrapper">
+        <button type="button" id="buscar-colaboradores-btn">🔍 Buscar colaboradores</button>
+    </div>
+
+    <div style="margin-top: 10px;">
+        <a href="{% url 'admin:core_colaborador_add' %}?_popup=1" class="button" target="_blank">
+            ➕ Cadastrar novo colaborador
+        </a>
+        <a href="{% url 'admin:core_analistainstrutor_add' %}?_popup=1" class="button" target="_blank">
+            📋 Cadastrar analista ou instrutor
+        </a>
+        <a href="{% url 'admin:usuarios_usuario_add' %}?is_staff=1&_popup=1" class="button" target="_blank">
+            🛡️ Cadastrar novo administrador
+        </a>
+    </div>
+{% endblock %}

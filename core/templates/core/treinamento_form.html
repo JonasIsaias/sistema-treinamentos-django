@@ -1,0 +1,526 @@
+{% extends 'core/base.html' %}
+{% load widget_tweaks %}
+{% load static %}
+
+{% block title %}Cadastrar Treinamento{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+<div class="max-w-4xl mx-auto bg-white shadow-md rounded-md p-8">
+  <h2 class="text-2xl font-bold text-primary mb-6 flex items-center gap-2">
+    <i data-feather="plus-circle"></i> Novo Treinamento
+  </h2>
+
+  <form method="post" enctype="multipart/form-data" class="space-y-6">
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+      <div class="bg-red-100 text-red-700 p-3 rounded">
+        {{ form.non_field_errors }}
+      </div>
+    {% endif %}
+
+    {% if form.errors %}
+      <div class="bg-red-200 p-4 rounded">
+        <strong>Erros do formulário:</strong>
+        <pre>{{ form.errors }}</pre>
+      </div>
+    {% endif %}
+
+    <!-- Título -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">
+        {{ form.titulo.label }}
+      </label>
+      {{ form.titulo|add_class:"w-full border rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-300" }}
+    </div>
+
+    <!-- Tipo Participante -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">
+        {{ form.tipo_participante.label }}
+      </label>
+      {{ form.tipo_participante|add_class:"w-full border rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-300" }}
+    </div>
+
+    <!-- Tipo e Formato -->
+    <div class="grid grid-cols-2 gap-6">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ form.tipo.label }}</label>
+        {{ form.tipo|add_class:"w-full border rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-300" }}
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ form.formato.label }}</label>
+        {{ form.formato|add_class:"w-full border rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-300" }}
+      </div>
+    </div>
+
+    <!-- On The Job -->
+    <div class="mt-4">
+      <label class="inline-flex items-center">
+        {{ form.on_the_job }}
+        <span class="ml-2 text-sm text-gray-700">{{ form.on_the_job.label }}</span>
+      </label>
+    </div>
+
+    <div class="mt-4 hidden" id="campo-tempo-on-the-job">
+      <label class="block text-sm font-medium text-gray-700 mb-1">{{ form.tempo_on_the_job.label }}</label>
+      {{ form.tempo_on_the_job|add_class:"w-32 border rounded px-3 py-2" }}
+      <p class="text-xs text-gray-500 mt-1">{{ form.tempo_on_the_job.help_text }}</p>
+    </div>
+
+    <!-- Carga Horária -->
+    <div id="carga-horaria-wrapper">
+      <label class="block text-sm font-medium text-gray-700 mb-1">
+        Carga Horária
+      </label>
+
+      <!-- Campo visual (UI) -->
+      <input
+        type="text"
+        id="carga_horaria_ui"
+        class="timepicker w-full border rounded px-3 py-2 font-mono"
+        placeholder="HH:MM:SS"
+      />
+
+      <!-- Campo real (hidden) -->
+      {{ form.carga_horaria|attr:"type:hidden" }}
+
+      <p class="text-xs text-gray-500 mt-1">
+        Informe a carga horária no formato HH:MM:SS
+      </p>
+
+      {% if form.carga_horaria.errors %}
+        <p class="text-red-600 text-sm mt-1">
+          {{ form.carga_horaria.errors|striptags }}
+        </p>
+      {% endif %}
+    </div>
+
+    <!-- Datas -->
+    <div class="grid grid-cols-2 gap-6">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ form.data_inicio.label }}</label>
+        {{ form.data_inicio|add_class:"w-full border rounded px-3 py-2 datepicker" }}
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ form.data_fim.label }}</label>
+        {{ form.data_fim|add_class:"w-full border rounded px-3 py-2 datepicker" }}
+      </div>
+    </div>
+
+    <!-- Local -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">{{ form.local.label }}</label>
+      {{ form.local|add_class:"w-full border rounded px-3 py-2" }}
+    </div>
+
+    <div id="field-local_personalizado" class="mt-4 hidden">
+      <label class="block text-sm font-medium text-gray-700 mb-1">{{ form.local_personalizado.label }}</label>
+      {{ form.local_personalizado|add_class:"w-full border rounded px-3 py-2" }}
+    </div>
+
+    <!--   BLOCO INTERNOS -->
+    <div id="interno-block">
+
+      <!-- Filtro -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">
+          {{ form.matriculas_filter.label }}
+        </label>
+
+        {{ form.matriculas_filter|add_class:"w-full border border-gray-300 rounded-lg px-4 py-3 font-mono text-sm shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200" }}
+
+        {% if form.matriculas_filter.errors %}
+          <div class="mt-2 bg-red-50 border border-red-200 rounded-md p-3">
+            <p class="text-sm font-semibold text-red-700 mb-1">
+              Alguns colaboradores não foram encontrados:
+            </p>
+
+            <ul class="list-disc list-inside text-sm text-red-600 space-y-1">
+              {% for error in form.matriculas_filter.errors %}
+                <li>{{ error }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- STATUS DO FILTRO -->
+      <div id="filtro-status"
+          class="mt-3 border border-gray-200 rounded-lg bg-gray-50 p-4 transition-all duration-300">
+
+        <div class="flex items-center justify-between flex-wrap gap-3">
+
+          <div class="flex items-center gap-2">
+            <div class="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
+
+            <span class="text-sm font-semibold text-gray-700">
+              Resultado do Filtro
+            </span>
+          </div>
+
+          <div class="flex gap-3 text-sm">
+
+            <div class="bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium">
+              Encontrados:
+              <span id="contador-encontrados">0</span>
+            </div>
+
+            <div class="bg-red-100 text-red-700 px-3 py-1 rounded-full font-medium">
+              Não encontrados:
+              <span id="contador-nao-encontrados">0</span>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Lista dinâmica -->
+        <div id="lista-nao-encontrados"
+            class="hidden mt-4 border-t pt-3">
+
+          <p class="text-sm font-semibold text-red-700 mb-2">
+            Não localizados:
+          </p>
+
+          <div id="itens-nao-encontrados"
+              class="flex flex-wrap gap-2">
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Upload CSV com instruções e download de modelo -->
+      <div class="border border-gray-300 rounded p-4 bg-gray-50">
+
+        <p class="text-sm text-gray-700 font-semibold mb-2">
+          Participantes Internos (Colaboradores do Call Center)
+        </p>
+
+        <p class="text-sm text-gray-600 mb-3">
+          Caso deseje adicionar colaboradores internos via lista, você pode utilizar o arquivo CSV padrão.
+          Essa planilha permite carregar rapidamente matrículas, dispensando a seleção manual individual.
+        </p>
+
+        <p class="text-sm text-gray-600 mb-3">
+          Clique aqui para baixar o modelo:
+          <a href="{% static 'modelos/modelo_matriculas.csv' %}" download class="text-blue-600 underline hover:text-blue-800">
+            baixar planilha padrão de matrículas
+          </a>
+        </p>
+
+        <p class="text-sm text-gray-700 font-medium mt-4 mb-1">Instruções importantes:</p>
+        <ul class="text-xs text-gray-600 list-disc pl-5 space-y-1">
+          <li>O arquivo deve estar no formato <strong>CSV</strong>.</li>
+          <li>Deve conter exatamente uma coluna chamada <code>matricula</code>.</li>
+          <li>Inclua apenas uma matrícula por linha, sem cabeçalhos adicionais.</li>
+          <li>A planilha deve ser salva com codificação <strong>UTF-8</strong>.</li>
+          <li>Matrículas inválidas ou com caracteres não numéricos serão ignoradas.</li>
+        </ul>
+
+        <div class="mt-4">
+          {{ form.matriculas_file }}
+        </div>
+
+        {% if form.matriculas_file.errors %}
+          <p class="text-red-600 text-sm mt-1">{{ form.matriculas_file.errors|striptags }}</p>
+        {% endif %}
+      </div>
+
+      <!-- Lista de colaboradores -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ form.colaboradores.label }}</label>
+        {{ form.colaboradores|add_class:"w-full border rounded h-48 px-3 py-2" }}
+      </div>
+    </div>
+
+    <!-- Tipo Externo: bloco de upload XLSX -->
+    <div id="externo-block" style="display:none;" class="border border-gray-300 rounded p-4 bg-gray-50">
+
+      <p class="text-sm text-gray-700 font-semibold mb-2">
+        Participantes Externos
+      </p>
+
+      <p class="text-sm text-gray-600 mb-3">
+        Para treinamentos com participantes externos ao quadro funcional do call center,
+        utilize a planilha padrão no formato <strong>.xlsx</strong>. Nela você deverá informar
+        corretamente os dados dos participantes que constarão na lista de presença.
+      </p>
+
+      <p class="text-sm text-gray-600 mb-3">
+        Você pode baixar o modelo aqui:
+        <a href="{% static 'modelos/modelo_participantes_externos.xlsx' %}" download class="text-blue-600 underline">
+          baixar modelo base de participantes externos
+        </a>
+      </p>
+
+      <p class="text-sm text-gray-700 font-medium mt-4 mb-1">Instruções importantes:</p>
+      <ul class="text-xs text-gray-600 list-disc pl-5 space-y-1">
+        <li>O arquivo deve estar no formato <strong>.xlsx</strong> (Excel).</li>
+        <li>As seguintes colunas são obrigatórias: Nome, E-mail, Cargo, Unidade, Cidade, Estado, Gestor, Data de Participação.</li>
+        <li>A planilha deve conter apenas um cabeçalho e os dados iniciando na linha 2.</li>
+        <li>Certifique-se de que o e-mail está no formato válido e que a data esteja no padrão reconhecível pelo Excel.</li>
+        <li>Registros incompletos serão ignorados e exibidos como erro.</li>
+      </ul>
+
+      <div class="mt-4">
+        <label for="id_planilha_externos" class="block text-sm font-medium text-gray-700 mb-1">
+          Upload da Planilha de Participantes Externos
+        </label>
+        {{ form.arquivo_participantes_externos|add_class:"w-full border rounded px-3 py-2" }}
+      </div>
+    </div>
+
+    <!-- Instrutores -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">{{ form.instrutores.label }}</label>
+      {{ form.instrutores|add_class:"w-full border rounded h-48 px-3 py-2" }}
+    </div>
+
+    <!-- Anexo Frequência -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">{{ form.anexo_frequencia.label }}</label>
+      {{ form.anexo_frequencia|add_class:"w-full border rounded px-3 py-2" }}
+    </div>
+
+    <!-- Criado por -->
+    <div>
+      {{ form.criado_por }}
+    </div>
+
+    <div class="text-right mt-6">
+      <button type="submit" class="bg-primary text-white px-6 py-2 rounded hover:bg-blue-800 transition">
+        Salvar Treinamento
+      </button>
+    </div>
+  </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  /* ======================== */
+  /*  LOCAL PERSONALIZADO     */
+  /* ======================== */
+  const selectLocal = document.querySelector("#id_local");
+  const inputOutro = document.querySelector("#field-local_personalizado");
+
+  function toggleOutroField() {
+    inputOutro.classList.toggle("hidden", selectLocal.value !== "outro");
+  }
+
+  selectLocal?.addEventListener("change", toggleOutroField);
+  toggleOutroField();
+
+  /* ======================== */
+  /*  TIPO PARTICIPANTE       */
+  /* ======================== */
+  const tipo = document.querySelector("#id_tipo_participante");
+  const blocoInterno = document.querySelector("#interno-block");
+  const blocoExterno = document.querySelector("#externo-block");
+
+  function atualizarVisibilidade() {
+    const externo = tipo.value === "externo";
+    blocoInterno.style.display = externo ? "none" : "block";
+    blocoExterno.style.display = externo ? "block" : "none";
+  }
+
+  tipo?.addEventListener("change", atualizarVisibilidade);
+  atualizarVisibilidade();
+
+  /*  VALIDAÇÃO DE DATAS      */
+  const dataInicio = document.querySelector("#id_data_inicio");
+  const dataFim = document.querySelector("#id_data_fim");
+
+  if (dataInicio && dataFim) {
+    dataFim.addEventListener("change", () => {
+      const [d1, m1, y1] = dataInicio.value.split("-");
+      const [d2, m2, y2] = dataFim.value.split("-");
+      const inicioDate = new Date(y1, m1 - 1, d1);
+      const fimDate = new Date(y2, m2 - 1, d2);
+      if (fimDate < inicioDate) {
+        alert("A data de fim não pode ser menor que a data de início.");
+        dataFim.value = "";
+      }
+    });
+  }
+
+  /* ======================== */
+  /*  FLATPICKR CONFIG        */
+  /* ======================== */
+  flatpickr(".datepicker", { altInput: true, altFormat: "d-m-Y", dateFormat: "d-m-Y", allowInput: true });
+  const cargaUI = document.querySelector("#carga_horaria_ui");
+  const cargaReal = document.querySelector("#id_carga_horaria");
+
+  flatpickr(cargaUI, {
+    enableTime: true,
+    noCalendar: true,
+    time_24hr: true,
+    enableSeconds: true,
+    dateFormat: "H:i:s",
+    allowInput: true,
+    onChange: function (selectedDates) {
+      if (selectedDates.length > 0) {
+        const d = selectedDates[0];
+
+        const h = String(d.getHours()).padStart(2, '0');
+        const m = String(d.getMinutes()).padStart(2, '0');
+        const s = String(d.getSeconds()).padStart(2, '0');
+
+        cargaReal.value = `${h}:${m}:${s}`;
+        cargaUI.value = `${h}:${m}:${s}`;
+      }
+    }
+  });
+  /* ======================== */
+  /*  FILTRO DE COLABORADORES + ON THE JOB */
+  /* ======================== */
+  const filterInput = document.querySelector("#id_matriculas_filter");
+  const colaboradoresSelect = document.querySelector("#id_colaboradores");
+  const onTheJobCheckbox = document.querySelector("#id_on_the_job");
+  const tempoWrapper = document.querySelector("#campo-tempo-on-the-job");
+  const tempoInput = document.querySelector("#id_tempo_on_the_job");
+  const cargaHorariaInput = document.querySelector("#id_carga_horaria");
+  const form = document.querySelector("form");
+
+  if (filterInput && colaboradoresSelect) {
+    const todosColaboradores = Array.from(colaboradoresSelect.options);
+
+    function atualizarCargaOnTheJob() {
+      const tempoPorPessoa = parseInt(tempoInput.value) || 0;
+      const selecionados = Array.from(colaboradoresSelect.options)
+        .filter(o => o.selected && o.style.display !== "none");
+      const cargaTotalMinutos = tempoPorPessoa * selecionados.length;
+
+      if (!isNaN(cargaTotalMinutos) && cargaTotalMinutos > 0) {
+        const horas = Math.floor(cargaTotalMinutos / 60);
+        const minutos = cargaTotalMinutos % 60;
+        cargaHorariaInput.value = `${horas.toString().padStart(2,'0')}:${minutos.toString().padStart(2,'0')}:00`;
+      } else if (onTheJobCheckbox.checked) {
+          cargaReal.value = "";
+          cargaUI.value = "";
+        }
+
+    }
+
+    function filtrarColaboradores() {
+
+      const filtros = filterInput.value
+        .toLowerCase()
+        .split("\n")
+        .map(x => x.trim())
+        .filter(Boolean);
+
+      let encontrados = 0;
+
+      const naoEncontrados = [];
+
+      // Todos os textos existentes
+      const textosExistentes = todosColaboradores.map(o =>
+        o.text.toLowerCase()
+      );
+
+      todosColaboradores.forEach(option => {
+
+        const texto = option.text.toLowerCase();
+
+        const corresponde =
+          filtros.length === 0 ||
+          filtros.some(f => texto.includes(f));
+
+        option.style.display = corresponde ? "" : "none";
+
+        if (corresponde) {
+          encontrados++;
+        }
+      });
+
+      // Verifica itens digitados que não existem
+      filtros.forEach(filtro => {
+
+        const existe = textosExistentes.some(texto =>
+          texto.includes(filtro)
+        );
+
+        if (!existe) {
+          naoEncontrados.push(filtro);
+        }
+      });
+
+      // Atualiza contadores
+      document.querySelector("#contador-encontrados").innerText = encontrados;
+
+      document.querySelector("#contador-nao-encontrados").innerText =
+        naoEncontrados.length;
+
+      // Lista visual
+      const listaWrapper = document.querySelector("#lista-nao-encontrados");
+      const listaItens = document.querySelector("#itens-nao-encontrados");
+
+      listaItens.innerHTML = "";
+
+      if (naoEncontrados.length > 0) {
+
+        listaWrapper.classList.remove("hidden");
+
+        naoEncontrados.forEach(item => {
+
+          const badge = document.createElement("div");
+
+          badge.className =
+            "bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-medium border border-red-200";
+
+          badge.innerText = item;
+
+          listaItens.appendChild(badge);
+        });
+
+      } else {
+
+        listaWrapper.classList.add("hidden");
+      }
+
+      atualizarCargaOnTheJob();
+    }
+
+    filterInput.addEventListener("input", filtrarColaboradores);
+    filterInput.addEventListener("change", filtrarColaboradores);
+  }
+
+  function toggleOnTheJobField() {
+    const ativo = onTheJobCheckbox.checked;
+    tempoWrapper.classList.toggle("hidden", !ativo);
+    tempoInput.required = ativo;
+    atualizarCargaOnTheJob();
+  }
+
+  onTheJobCheckbox?.addEventListener("change", toggleOnTheJobField);
+  tempoInput?.addEventListener("input", atualizarCargaOnTheJob);
+  colaboradoresSelect?.addEventListener("change", atualizarCargaOnTheJob);
+
+  toggleOnTheJobField();
+
+  /* ======================== */
+  /*  ENVIO APENAS COLABORADORES VISÍVEIS */
+  /* ======================== */
+  form?.addEventListener("submit", function () {
+    if (cargaUI.value) {
+      const partes = cargaUI.value.split(":");
+
+      if (partes.length === 3) {
+        const h = partes[0].padStart(2, '0');
+        const m = partes[1].padStart(2, '0');
+        const s = partes[2].padStart(2, '0');
+
+        cargaReal.value = `${h}:${m}:${s}`;
+      }
+    }
+  });
+
+});
+</script>
+
+<script>feather.replace()</script>
+{% endblock %}

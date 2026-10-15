@@ -1,0 +1,215 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Registrar Frequência - {{ treinamento.titulo }}{% endblock %}
+
+{% block content %}
+<section class="max-w-7xl mx-auto bg-white p-6 rounded-2xl shadow-md font-[Pitanga]">
+
+  <h2 class="text-[28pt] font-semibold text-[#1539AA] mb-6 flex items-center gap-3">
+    📝 Registrar Frequência:
+    <span class="text-[#FF8800]">{{ treinamento.titulo }}</span>
+  </h2>
+
+  <p class="text-[16pt] font-bold text-[#1539AA] mb-4">
+    Data: <span class="text-[#333]">{{ data|date:"d/m/Y" }}</span>
+  </p>
+
+  <div id="countdown-container" class="mb-4 text-[14pt] font-semibold text-[#333]">
+    ⏳ Prazo para registro: <span id="countdown-timer">--:--:--</span>
+  </div>
+
+  <form method="post" enctype="multipart/form-data" id="frequencia-form">
+    {% csrf_token %}
+    {{ formset.management_form }}
+
+    <div class="overflow-x-auto">
+      <table class="min-w-full border border-gray-300 rounded-xl overflow-hidden">
+
+        <thead class="bg-[#F0F4FF] text-sm font-semibold text-[#1539AA]">
+          <tr>
+            <th class="px-4 py-3">Nome</th>
+            <th class="px-4 py-3">Serviço / Cargo</th>
+            <th class="px-4 py-3">Coordenador / Gestor</th>
+            <th class="px-4 py-3">Supervisor / Unidade</th>
+            <th class="px-4 py-3 text-center">Presença</th>
+            <th class="px-4 py-3">Justificativa / Anexo</th>
+          </tr>
+        </thead>
+
+        <tbody class="text-sm text-gray-700 divide-y">
+
+          {# ================= INTERNOS ================= #}
+          {% for form in formset %}
+          <tr class="form-row bg-[#F9FAFB] hover:bg-[#F1F5FF]">
+
+            <td class="px-4 py-3 font-medium">
+              {{ form.id }}
+              {{ form.colaborador.as_hidden }}
+              {{ form.instance.colaborador }}
+            </td>
+
+            <td class="px-4 py-3">
+              {{ form.instance.colaborador.servico.nome }}
+            </td>
+
+            <td class="px-4 py-3">
+              {{ form.instance.colaborador.coord_atendimento }}
+            </td>
+
+            <td class="px-4 py-3">
+              {{ form.instance.colaborador.responsavel_direto }}
+            </td>
+
+            <td class="px-4 py-3 text-center">
+              <input type="hidden"
+                     name="{{ form.presente.html_name }}"
+                     value="{{ form.presente.value|yesno:'True,False' }}">
+
+              <div class="toggle-presenca flex justify-center gap-2">
+                <button type="button" class="btn-presenca bg-gray-400 text-white px-4 py-1 rounded"
+                        data-value="True">Presente</button>
+                <button type="button" class="btn-presenca bg-gray-400 text-white px-4 py-1 rounded"
+                        data-value="False">Faltou</button>
+              </div>
+            </td>
+
+            <td class="px-4 py-3">
+              <div class="campo-justificativa hidden">
+                <textarea name="{{ form.prefix }}-justificativa"
+                          class="w-full border rounded px-2 py-1"
+                          rows="2"></textarea>
+              </div>
+
+              <div class="campo-anexo hidden mt-1">
+                <input type="file"
+                       name="{{ form.prefix }}-anexo"
+                       accept=".pdf,.jpg,.jpeg,.png">
+              </div>
+            </td>
+
+          </tr>
+          {% endfor %}
+
+          {# ================= EXTERNOS ================= #}
+          {% for participante in treinamento.participantes_externos.all %}
+          <tr class="form-row externo-row bg-[#FFF7ED] hover:bg-[#FFEFD6]">
+
+            <td class="px-4 py-3 font-medium">
+              {{ participante.nome }}
+              <input type="hidden" name="externo_ids[]" value="{{ participante.id }}">
+            </td>
+
+            <td class="px-4 py-3">{{ participante.cargo|default:"—" }}</td>
+            <td class="px-4 py-3">{{ participante.gestor|default:"—" }}</td>
+            <td class="px-4 py-3">{{ participante.unidade|default:"—" }}</td>
+
+            <td class="px-4 py-3 text-center">
+              <input type="hidden"
+                     name="externo_{{ participante.id }}_presente"
+                     value="False">
+
+              <div class="toggle-presenca flex justify-center gap-2">
+                <button type="button" class="btn-presenca bg-gray-400 text-white px-4 py-1 rounded"
+                        data-value="True">Presente</button>
+                <button type="button" class="btn-presenca bg-gray-400 text-white px-4 py-1 rounded"
+                        data-value="False">Faltou</button>
+              </div>
+            </td>
+
+            <td class="px-4 py-3">
+              <div class="campo-justificativa hidden">
+                <textarea name="externo_{{ participante.id }}_justificativa"
+                          class="w-full border rounded px-2 py-1"
+                          rows="2"></textarea>
+              </div>
+
+              <div class="campo-anexo hidden mt-1">
+                <input type="file"
+                       name="externo_{{ participante.id }}_anexo"
+                       accept=".pdf,.jpg,.jpeg,.png">
+              </div>
+            </td>
+
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="6" class="text-center py-4 text-gray-500">
+              ℹ️ Nenhum participante externo.
+            </td>
+          </tr>
+          {% endfor %}
+
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pt-6 flex justify-end">
+      <button type="submit"
+              class="bg-[#FF222B] hover:bg-[#d51d24] text-white px-6 py-2 rounded-lg shadow">
+        💾 Salvar Frequência
+      </button>
+    </div>
+
+  </form>
+</section>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Controle de botões presença
+    document.querySelectorAll('.form-row').forEach(row => {
+      const buttons = row.querySelectorAll('.btn-presenca');
+      const input = row.querySelector('input[type="hidden"][name$="presente"]');
+      const justificativa = row.querySelector('.campo-justificativa');
+      const anexo = row.querySelector('.campo-anexo');
+
+      function update(value) {
+        input.value = value;
+        justificativa.classList.toggle('hidden', value === "True");
+        anexo.classList.toggle('hidden', value === "True");
+
+        buttons.forEach(btn => {
+          btn.classList.toggle('bg-blue-600', btn.dataset.value === value && value === "True");
+          btn.classList.toggle('bg-red-600', btn.dataset.value === value && value === "False");
+          btn.classList.toggle('bg-gray-400', btn.dataset.value !== value);
+        });
+      }
+
+      update(input.value || "False");
+
+      buttons.forEach(btn => {
+        btn.addEventListener('click', () => update(btn.dataset.value));
+      });
+    });
+
+    // Contagem regressiva até o prazo final
+    const prazoFinal = {{ prazo_final_timestamp|safe }};
+    const countdownEl = document.getElementById('countdown-timer');
+    const submitBtn = document.getElementById('submit-btn');
+
+    function updateCountdown() {
+      const now = new Date().getTime();
+      const distance = prazoFinal - now;
+
+      if (distance <= 0) {
+        countdownEl.textContent = "⛔ Prazo expirado";
+        submitBtn.disabled = true;
+        submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        return;
+      }
+
+      const hours = Math.floor((distance / (1000 * 60 * 60)) % 24);
+      const minutes = Math.floor((distance / (1000 * 60)) % 60);
+      const seconds = Math.floor((distance / 1000) % 60);
+
+      countdownEl.textContent = 
+        String(hours).padStart(2, '0') + ":" +
+        String(minutes).padStart(2, '0') + ":" +
+        String(seconds).padStart(2, '0');
+
+      setTimeout(updateCountdown, 1000);
+    }
+    updateCountdown();
+  });
+</script>
+{% endblock %}
