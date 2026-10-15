@@ -553,7 +553,7 @@ class TreinamentoAdminForm(forms.ModelForm):
             treinamento.save()
 
         # =========================
-        # SALVAR M2M QUE FALTARAM
+        # SALVAR M2M
         # =========================
         if 'instrutores' in self.cleaned_data:
             treinamento.instrutores.set(self.cleaned_data['instrutores'])
@@ -639,7 +639,7 @@ class FrequenciaForm(forms.ModelForm):
         if presente is False and not justificativa and not anexo:
             cleaned_data['justificativa'] = "Falta sem justificativa"
 
-        # 🔒 Nova validação: respeitar apenas prazo útil (não período fixo do treinamento)
+        # Nova validação: respeitar apenas prazo útil (não período fixo do treinamento)
         if self.treinamento and self.data_param:
             prazo_limite_data = add_workdays(self.treinamento.data_inicio, 1)  # 1 dia útil
             # Se data é anterior ao início do treinamento e já passou do prazo útil → erro
