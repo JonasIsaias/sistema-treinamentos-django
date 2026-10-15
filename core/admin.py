@@ -284,7 +284,7 @@ class TreinamentoAdmin(ImportExportModelAdmin):
             )
 
         else:
-            # 🔹 EDIÇÃO (COM status)
+            # EDIÇÃO (COM status)
             return (
                 (None, {
                     'fields': (
@@ -387,7 +387,7 @@ class TreinamentoAdmin(ImportExportModelAdmin):
                 for i in range(dias):
                     data = obj.data_inicio + timedelta(days=i)
 
-                    # 🔹 COLABORADORES INTERNOS
+                    # COLABORADORES INTERNOS
                     for colaborador in obj.colaboradores.all():
                         Frequencia.objects.get_or_create(
                             treinamento=obj,
@@ -396,7 +396,7 @@ class TreinamentoAdmin(ImportExportModelAdmin):
                             defaults={'presente': True}
                         )
 
-                    # 🔹 PARTICIPANTES EXTERNOS (AQUI ESTÁ O QUE FALTAVA)
+                    # PARTICIPANTES EXTERNOS
                     for externo in obj.participantes_externos.all():
                         Frequencia.objects.get_or_create(
                             treinamento=obj,
@@ -409,7 +409,7 @@ class TreinamentoAdmin(ImportExportModelAdmin):
             obj.status = 'concluido'
             obj.status_manual = True
 
-            # Atualiza número de treinados (agora incluindo externos)
+            # Atualiza número de treinados
             obj.numero_treinados = obj.quantidade_treinados()
 
             obj.save()
@@ -509,7 +509,7 @@ class TreinamentoAdmin(ImportExportModelAdmin):
 
     preview_anexo_frequencia.short_description = "Visualização do Anexo"
 
-    # Métodos existentes mantidos:
+    
     def get_display_local(self, obj):
         return obj.local_personalizado if obj.local == 'outro' else obj.get_local_display()
     get_display_local.short_description = "Local"
@@ -615,7 +615,7 @@ class TreinamentoAdmin(ImportExportModelAdmin):
 
         treinados = 0
 
-        # 🔹 COLABORADORES INTERNOS
+        # COLABORADORES INTERNOS
         for colaborador in obj.colaboradores.all():
             presencas = obj.frequencia_set.filter(
                 colaborador=colaborador,
@@ -628,7 +628,7 @@ class TreinamentoAdmin(ImportExportModelAdmin):
             if percentual >= 75:
                 treinados += 1
 
-        # 🔹 PARTICIPANTES EXTERNOS
+        # PARTICIPANTES EXTERNOS
         for externo in obj.participantes_externos.all():
             presencas = obj.frequencia_set.filter(
                 participante_externo=externo,
