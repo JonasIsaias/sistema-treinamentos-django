@@ -1,34 +1,49 @@
-# Sistema de Gestão de Treinamentos
+# 🎓 Sistema de Gestão de Treinamentos
 
-Sistema web desenvolvido em Django para apoiar a gestão de treinamentos, usuários, colaboradores e registros de capacitação.
+<p align="center">
+  <strong>Plataforma web para organização e gerenciamento de treinamentos corporativos.</strong>
+</p>
 
-## Sobre o projeto
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/Django-092E20?style=for-the-badge&logo=django&logoColor=white" alt="Django">
+  <img src="https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white" alt="MySQL">
+  <img src="https://img.shields.io/badge/Status-Em%20desenvolvimento-blue?style=for-the-badge" alt="Status">
+</p>
 
-A aplicação tem como objetivo centralizar informações e facilitar o gerenciamento das atividades de treinamento, oferecendo uma estrutura web com autenticação, administração de dados e recursos para organização das informações.
+---
 
-## Funcionalidades
+## 📌 Sobre o projeto
 
-- Autenticação e gerenciamento de usuários.
-- Modelo de usuário personalizado.
-- Interface administrativa do Django.
-- Gerenciamento de informações relacionadas aos treinamentos.
-- Organização de aplicações e templates.
-- Importação e exportação de dados, conforme os recursos implementados.
-- Configuração de arquivos estáticos e mídias.
-- Suporte a banco de dados MySQL.
+O **Sistema de Gestão de Treinamentos** é uma aplicação web desenvolvida em Python com Django, voltada à organização de informações relacionadas a treinamentos, usuários e atividades de capacitação.
 
-*As funcionalidades disponíveis dependem da implementação atual do projeto.*
+O projeto busca centralizar informações, estruturar rotinas administrativas e facilitar o gerenciamento dos registros de treinamento por meio de uma aplicação web.
 
-## Tecnologias utilizadas
+## ✨ Funcionalidades
 
-- **Python**
-- **Django**
-- **MySQL**
-- HTML, CSS e JavaScript
-- Django Admin
-- Bibliotecas complementares para administração, formulários e importação/exportação de dados.
+- 🔐 Autenticação e gerenciamento de usuários.
+- 👤 Modelo de usuário personalizado com Django.
+- 📚 Organização de informações relacionadas aos treinamentos.
+- 🛠️ Interface administrativa para gerenciamento de registros.
+- 📊 Recursos de importação e exportação de dados, conforme disponíveis na implementação.
+- 📁 Organização de arquivos estáticos, templates e mídias.
+- 🗄️ Integração com banco de dados MySQL.
 
-## Estrutura do projeto
+> As funcionalidades apresentadas devem ser ajustadas conforme os recursos efetivamente implementados na versão publicada.
+
+## 🧰 Tecnologias
+
+| Tecnologia | Finalidade |
+|---|---|
+| Python | Linguagem principal |
+| Django | Framework web |
+| MySQL | Persistência de dados |
+| HTML e CSS | Estrutura e apresentação |
+| JavaScript | Interatividade no navegador |
+| Django Admin | Administração dos registros |
+| Bibliotecas Python | Recursos complementares |
+
+## 🏗️ Arquitetura do projeto
 
 ```text
 sistema-treinamentos/
@@ -44,75 +59,72 @@ sistema-treinamentos/
 └── README.md
 ```
 
-A estrutura acima é ilustrativa. Os diretórios podem variar conforme a organização atual do projeto.
+A estrutura é ilustrativa e deve refletir os diretórios efetivamente existentes no repositório.
 
-## Pré-requisitos
+## 🚀 Como executar localmente
 
-Antes de iniciar, instale:
+### 1. Pré-requisitos
 
-- Python compatível com a versão utilizada no projeto.
+- Python compatível com as dependências do projeto.
 - MySQL Server.
-- Git (opcional, para clonar o repositório pelo terminal).
+- Git, caso opte por clonar o repositório pelo terminal.
 
-## Instalação e configuração
-
-### 1. Obtenha o projeto
-
-Clone o repositório:
+### 2. Obtenha o código
 
 ```bash
 git clone https://github.com/SEU_USUARIO/SEU_REPOSITORIO.git
 cd SEU_REPOSITORIO
 ```
 
-Substitua a URL pelo endereço real do repositório.
+Substitua a URL pelo endereço do repositório.
 
-### 2. Crie um ambiente virtual
+### 3. Crie um ambiente virtual
 
-Windows:
+**Windows**
 
 ```bash
 python -m venv .venv
 .venv\Scripts\activate
 ```
 
-Linux ou macOS:
+**Linux ou macOS**
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 ```
 
-### 3. Instale as dependências
+### 4. Instale as dependências
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Configure as variáveis de ambiente
+### 5. Configure o ambiente
 
-Copie o arquivo `.env.example` para `.env` e preencha os valores necessários para seu ambiente local.
+Copie `.env.example` para `.env` e configure as variáveis necessárias.
 
-As variáveis podem incluir:
+Exemplo das variáveis esperadas:
 
-- `DJANGO_SECRET_KEY`
-- `DJANGO_DEBUG`
-- `DJANGO_ALLOWED_HOSTS`
-- `DB_NAME`
-- `DB_USER`
-- `DB_PASSWORD`
-- `DB_HOST`
-- `DB_PORT`
+```dotenv
+DJANGO_SECRET_KEY=
+DJANGO_DEBUG=False
+DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
 
-Gere uma chave secreta exclusiva para seu ambiente. Nunca compartilhe o arquivo `.env` ou credenciais reais.
+DB_NAME=
+DB_USER=
+DB_PASSWORD=
+DB_HOST=127.0.0.1
+DB_PORT=3306
+```
 
-### 5. Configure o banco de dados
+Preencha os valores localmente. Nunca publique o arquivo `.env` nem credenciais reais.
 
-Crie um banco MySQL vazio e configure as variáveis de conexão no arquivo `.env`.
+### 6. Prepare o banco de dados
 
-O usuário do banco deve possuir apenas as permissões necessárias para executar a aplicação.
+Crie um banco MySQL vazio e configure o acesso por meio das variáveis de ambiente.
 
-### 6. Execute as migrações
+Execute as migrações:
 
 ```bash
 python manage.py migrate
@@ -124,51 +136,67 @@ python manage.py migrate
 python manage.py createsuperuser
 ```
 
-### 8. Inicie o servidor de desenvolvimento
+### 8. Inicie o servidor
 
 ```bash
 python manage.py runserver
 ```
 
-Acesse a aplicação em:
+A aplicação estará disponível em:
 
 http://127.0.0.1:8000/
 
-O servidor de desenvolvimento não deve ser utilizado como servidor de produção.
+O servidor de desenvolvimento destina-se a testes locais, não à implantação em produção.
 
-## Arquivos estáticos
+## 🖼️ Capturas de tela
 
-Os arquivos originais de CSS, JavaScript e imagens devem ser mantidos no diretório `static/`.
+Adicione imagens demonstrativas da aplicação nesta seção quando estiverem disponíveis.
 
-Em ambientes de implantação que exigem a coleta dos arquivos estáticos, execute:
+Exemplo de organização:
 
-```bash
-python manage.py collectstatic
+```text
+docs/
+└── screenshots/
+    ├── dashboard.png
+    ├── treinamentos.png
+    └── usuarios.png
 ```
 
-A pasta gerada `staticfiles/` não precisa ser versionada no repositório.
+Use somente capturas sem dados pessoais, credenciais ou informações corporativas confidenciais.
 
-## Segurança e privacidade
+<!-- Quando houver capturas disponíveis, você poderá inserir:
+![Dashboard](docs/screenshots/dashboard.png)
+-->
 
-Este repositório não deve conter:
+## 🔒 Segurança
 
-- Senhas ou chaves secretas.
-- Arquivos `.env`.
-- Bancos de dados com informações reais.
-- Dados pessoais de usuários ou colaboradores.
-- Tokens de acesso.
-- Backups, relatórios internos ou anexos confidenciais.
+Este projeto deve ser configurado com credenciais próprias para cada ambiente.
 
-Utilize dados fictícios para testes e demonstrações.
+- Não versionar arquivos `.env`.
+- Não publicar senhas, tokens ou chaves secretas.
+- Não incluir bancos de dados com informações reais.
+- Não compartilhar dados pessoais ou documentos confidenciais.
+- Utilizar dados fictícios em demonstrações.
+- Manter dependências e configurações de segurança atualizadas.
 
-## Desenvolvimento
+## 🛣️ Possíveis evoluções
 
-Contribuições e sugestões podem ser organizadas por meio de branches e pull requests, conforme as permissões e as regras definidas para o repositório.
+- Aprimoramento de dashboards e indicadores.
+- Melhorias na experiência de utilização.
+- Ampliação de relatórios gerenciais.
+- Automatização de tarefas administrativas.
+- Evolução dos recursos de importação e exportação.
 
-Antes de propor alterações, valide a aplicação e revise os arquivos modificados para evitar a inclusão acidental de informações sensíveis.
+Estas são possibilidades futuras, não funcionalidades necessariamente disponíveis na versão atual.
 
-## Licença
+## 👨‍💻 Desenvolvimento
 
-A licença deste projeto deve ser definida pelo responsável pelo repositório.
+O projeto utiliza uma arquitetura baseada em Django, com separação de responsabilidades entre aplicações, templates e recursos estáticos.
 
-Até que uma licença seja incluída, não presuma que o código esteja liberado para redistribuição ou uso por terceiros.
+Sugestões e melhorias podem ser registradas por meio de issues e pull requests, conforme as regras do repositório.
+
+## 📄 Licença
+
+A licença deverá ser definida pelo responsável pelo projeto.
+
+Até que uma licença seja adicionada, não presuma que o código esteja autorizado para redistribuição ou uso por terceiros.
