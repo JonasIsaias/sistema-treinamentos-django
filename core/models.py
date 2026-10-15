@@ -244,7 +244,7 @@ class Treinamento(models.Model):
     def quantidade_treinados(self):
         total = len(self.colaboradores_treinados())
 
-        # 🔹 EXTERNOS
+        # EXTERNOS
         if self.data_inicio and self.data_fim and self.carga_horaria:
             dias_total = (self.data_fim - self.data_inicio).days + 1
             carga_total = self.carga_horaria.total_seconds() * dias_total
